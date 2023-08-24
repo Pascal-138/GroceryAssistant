@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django_filters',
     'recipes',
     'api',
-    'users',]
+    'users']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -35,7 +35,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',]
+    'django.middleware.clickjacking.XFrameOptionsMiddleware']
 
 ROOT_URLCONF = 'foodgram.urls'
 
@@ -116,4 +116,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = 'backend/media/recipes/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'recipes')
-
