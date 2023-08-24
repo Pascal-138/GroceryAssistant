@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class User(AbstractUser):
     """Модель пользователя."""
 
@@ -13,7 +14,6 @@ class User(AbstractUser):
     password = models.CharField(
         max_length=150,
         verbose_name='Пароль',
-        #required=True,
     )
     email = models.EmailField(
         max_length=254,
@@ -28,12 +28,14 @@ class User(AbstractUser):
         max_length=150,
         verbose_name='Фамилия',
     )
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
     def __str__(self) -> str:
         return self.username
-    
+
 
 class Follow(models.Model):
     """Модель подписок."""

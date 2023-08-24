@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin import register
 from django.contrib.auth.admin import UserAdmin
 
-from users.models import Follow, User 
+from users.models import Follow, User
 
 
 class UserAdmin(UserAdmin):
@@ -19,6 +19,7 @@ class UserAdmin(UserAdmin):
         'username',
     ]
 
+
 @register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = [
@@ -30,5 +31,6 @@ class FollowAdmin(admin.ModelAdmin):
         'author',
         'user',
     ]
+
 
 admin.site.register(User, UserAdmin)
