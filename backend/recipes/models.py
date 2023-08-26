@@ -1,7 +1,10 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from users.models import User
+
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000
 
 
 class Tag(models.Model):
@@ -26,6 +29,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['name']
 
     def __str__(self) -> str:
         return self.name
@@ -44,12 +48,16 @@ class Recipe(models.Model):
         verbose_name='Название'
     )
 
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления (в минутах)',
         validators=[
             MinValueValidator(
-                1,
-                message='Время приготовления не менее 1 минуты')
+                MIN_AMOUNT,
+                message='Время приготовления не менее 1 минуты'),
+            MaxValueValidator(
+                MAX_AMOUNT,
+                message='Время приготовления не может быть бесконечным'
+            )
         ]
     )
 
@@ -74,7 +82,7 @@ class Recipe(models.Model):
 
     image = models.ImageField(
         verbose_name='Картинка, закодированная в Base64',
-        upload_to='recipes/',
+        upload_to='recipes/images/',
     )
 
     pub = models.DateTimeField(
@@ -130,13 +138,23 @@ class RecipeIngredient(models.Model):
         related_name='ingredient_list',
     )
 
-    amount = models.PositiveIntegerField(
-        verbose_name='Количество ингредиента'
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество ингредиента',
+        validators=[
+            MinValueValidator(
+                MIN_AMOUNT,
+                message='Время приготовления не менее 1 минуты'),
+            MaxValueValidator(
+                MAX_AMOUNT,
+                message='Время приготовления не может быть бесконечным'
+            )
+        ]
     )
 
     class Meta:
         verbose_name = 'Количество ингредиента'
         verbose_name_plural = 'Список ингредиентов'
+        ordering = ['-amount']
 
     def __str__(self) -> str:
         return f'{self.recipe}, {self.ingredient}, {self.amount}'
@@ -163,6 +181,7 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
+        ordering = ['recipe']
 
     def __str__(self):
         return (f'Пользователь {self.user} добавил {self.recipe}'
@@ -188,6 +207,7 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
+        ordering = ['recipe']
 
     def __str__(self):
         return (f'Пользователь {self.user} добавил {self.recipe} '

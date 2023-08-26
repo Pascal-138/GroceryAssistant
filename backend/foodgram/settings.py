@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = str(os.getenv('DEBUG', False)).lower() == 'true'
 
-ALLOWED_HOSTS = ['host.docker.internal', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['host.docker.internal', 'backend', '127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -114,5 +114,5 @@ DJOSER = {
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-MEDIA_URL = 'backend/media/recipes/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'recipes')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

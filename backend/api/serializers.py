@@ -5,6 +5,9 @@ from rest_framework import serializers
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Follow, User
 
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000
+
 
 class CustomUserSerializer(UserSerializer):
     """Сериализатор для модели User."""
@@ -77,12 +80,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_is_favorited(recipe):
-        '''проверка на добавление рецепта в избранное'''
+        """проверка на добавление рецепта в избранное"""
         return recipe.is_favorited.exists()
 
     @staticmethod
     def get_is_in_shopping_cart(recipe):
-        '''проверка на добавление рецепта в список покупок'''
+        """проверка на добавление рецепта в список покупок"""
         return recipe.is_in_shopping_cart.exists()
 
 
@@ -100,10 +103,12 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
-    '''Сериализатор для добавления ингредиентов в рецепт.'''
+    """Сериализатор для добавления ингредиентов в рецепт."""
     id = serializers.PrimaryKeyRelatedField(source='ingredient',
                                             queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        min_value=MIN_AMOUNT,
+        max_value=MAX_AMOUNT)
 
     class Meta:
         model = RecipeIngredient
@@ -113,7 +118,10 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientCreateSerializer(many=True)
     image = Base64ImageField(required=True)
-
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_AMOUNT,
+        max_value=MAX_AMOUNT
+    )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
 
@@ -127,32 +135,30 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'cooking_time',
                   )
 
-    def create(self, validated_data):
+    def update_ingredients(self, recipe, ingredients_data):
+        recipe_ingredients = []
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data.get('ingredient').id
+            amount = ingredient_data.get('amount')
+            recipe_ingredients.append(
+                RecipeIngredient(recipe=recipe,
+                                 ingredient_id=ingredient_id,
+                                 amount=amount)
+            )
 
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
+
+    def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         instance = super().create(validated_data)
-        ingredient_list = [
-            RecipeIngredient(
-                recipe=instance,
-                ingredient=ingredient_data.get('ingredient'),
-                amount=ingredient_data.get('amount')
-            )
-            for ingredient_data in ingredients
-        ]
-        instance.ingredient_list.bulk_create(ingredient_list)
+        self.update_ingredients(instance, ingredients)
         return instance
 
     def update(self, instance, validated_data):
-
         ingredients_data = validated_data.pop('ingredients')
         instance = super().update(instance, validated_data)
-        for ingredient_data in ingredients_data:
-            ingredient = ingredient_data.get('ingredient')
-            amount = ingredient_data.get('amount')
-            instance.ingredient_list.update(
-                amount=amount,
-                ingredient=ingredient
-            )
+        self.update_ingredients(instance, ingredients_data)
         return instance
 
     def to_representation(self, instance):
@@ -213,7 +219,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes = Recipe.objects.filter(author=obj.author)
+        recipes = obj.recipes.all()
         limit = request.GET.get('recipes_limit')
 
         if limit:

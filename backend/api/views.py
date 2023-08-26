@@ -69,16 +69,16 @@ class RecipeViewSet(ModelViewSet):
             serializer = RecipeShortSerializer(recipe_obj,
                                                context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            try:
-                favorite = Favorite.objects.get(user=request.user,
-                                                recipe=recipe_obj)
+        if request.method == 'DELETE':
+            favorite = Favorite.objects.filter(user=request.user,
+                                               recipe=recipe_obj).first()
+            if favorite:
                 favorite.delete()
                 return Response(
                     {'message': 'Рецепт удален из избранного.'},
                     status=status.HTTP_204_NO_CONTENT,
                 )
-            except Favorite.DoesNotExist:
+            else:
                 return Response(
                     {'errors': 'Рецепт не найден в избранном.'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -93,11 +93,6 @@ class RecipeViewSet(ModelViewSet):
         user = self.request.user
 
         if request.method == 'POST':
-            if ShoppingCart.objects.filter(recipe=recipe, user=user).exists():
-                return Response(
-                    {'errors': 'Рецепт уже добавлен'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             ShoppingCart.objects.create(recipe=recipe, user=user)
             serializer = RecipeSerializer(recipe)
             return Response(
@@ -186,20 +181,21 @@ class FollowViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             serializer = FollowCreateSerializer(data=data)
-            serializer.is_valid()
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            if not Follow.objects.filter(user=user, author=author).exists():
-                return Response(
-                    {'errors': 'Вы не подписаны'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if request.method == 'DELETE':
+            follow = user.following.filter(author=author).first()
 
-            follow = Follow.objects.get(user=user, author=author)
-            follow.delete()
+        if not follow:
             return Response(
-                {'message': 'Подписка удалена'},
-                status=status.HTTP_204_NO_CONTENT
+                {'errors': 'Вы не подписаны'},
+                status=status.HTTP_400_BAD_REQUEST
             )
+
+        follow.delete()
+        return Response(
+            {'message': 'Подписка удалена'},
+            status=status.HTTP_204_NO_CONTENT
+        )
