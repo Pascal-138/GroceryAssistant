@@ -11,28 +11,25 @@ services:
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
-      
   backend:
-    image: foodgram_backend
+    image: pascal163/foodgram_backend
     env_file: .env
+    depends_on:
+      - db
     volumes:
       - static:/backend_static/
       - media:/app/media/
-    depends_on:
-      - db
-
   frontend:
-    image: infra-frontend
+    image: pascal163/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
-    image: nginx:1.19.3
+    image: pascal163/foodgram_infra
     ports:
-      - "8000:80"
+      - 8000:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/var/html/static/
-      # - static:/staticfiles/
       - media:/var/html/media/
