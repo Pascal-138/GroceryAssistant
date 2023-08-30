@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-123')
 
 DEBUG = str(os.getenv('DEBUG', False)).lower() == 'true'
 
-ALLOWED_HOSTS = ['host.docker.internal', 'backend', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['51.250.102.155', '127.0.0.1', 'localhost', 'foodgrampy.hopto.org', 'host.docker.internal', 'backend']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

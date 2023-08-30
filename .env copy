@@ -1,8 +1,0 @@
-POSTGRES_USER=foodgram_user
-POSTGRES_PASSWORD=foodgram_password
-POSTGRES_DB=foodgram
-DB_NAME=foodgram
-DB_HOST=db
-DB_PORT=5432
-SECRET_KEY=django-insecure-3(g17ci^vo(eey#m*02=5be%3k%)q_h)uhda93zo9@wvu42oz1
-DEBUG=False
