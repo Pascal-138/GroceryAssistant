@@ -11,7 +11,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-123')
 
 DEBUG = str(os.getenv('DEBUG', False)).lower() == 'true'
 
-ALLOWED_HOSTS = ['51.250.102.155', '127.0.0.1', 'localhost', 'foodgrampy.hopto.org', 'host.docker.internal', 'backend']
+allowed_hosts_str = os.getenv('ALLOWED_HOSTS', 'SECRET_HOSTS')
+ALLOWED_HOSTS = allowed_hosts_str.split(',')
+ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -119,6 +121,7 @@ DJOSER = {
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 # STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
