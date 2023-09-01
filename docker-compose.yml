@@ -1,5 +1,4 @@
 version: '3.3'
-
 volumes:
   pg_data:
   static:
@@ -7,67 +6,37 @@ volumes:
 
 services:
   db:
-    image: postgres:13
+    image: postgres:13.10
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
       
   backend:
-    image: foodgram_backend
+    build: ./backend/
     env_file: .env
     volumes:
-      - static:/backend_static/
-      - media:/app/media/
+      - static:/backend_static
+      - media:/app/media
     depends_on:
       - db
 
   frontend:
-    image: infra-frontend
+    build: ./frontend/
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
     volumes:
-      - ../frontend/:/app/result_build/
-  nginx:
-    image: nginx:1.19.3
+      - static:/frontend_static
+    depends_on:
+      - backend
+
+  gateway:
+    build: ./infra/
+    env_file: .env
+    volumes:
+      - static:/staticfiles/
+      - media:/media
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
-      - static:/var/html/static/
-      - media:/var/html/media/
-
-# version: '3'
-
-# volumes:
-#   pg_data:
-#   static:
-#   media:
-
-# services:
-#   db:
-#     image: postgres:13
-#     env_file: .env
-#     volumes:
-#       - pg_data:/var/lib/postgresql/data
-#   backend:
-#     build: ./backend/
-#     env_file: .env
-#     volumes:
-#       - static:/backend_static/
-#       - media:/app/media/
-#     depends_on:
-#       - db
-#   frontend:
-#     env_file: .env
-#     build: ./frontend/
-#     command: cp -r /app/build/. /static/
-#     volumes:
-#       - static:/static
-#   gateway:
-#     build: ./nginx/
-#     env_file: .env
-#     ports:
-#       - 9000:80
-#     volumes:
-#       - static:/static
-#       - media:/app/media/
+      - "8000:80"
+    depends_on:
+      - frontend
+    
