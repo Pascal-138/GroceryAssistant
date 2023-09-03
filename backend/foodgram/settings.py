@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-3(g17ci^vo(eey#m*02=5be%3k%)q_h)uhda93zo9@wvu42oz1'
 
-DEBUG=True
+DEBUG = True
 
 ALLOWED_HOSTS = ['51.250.102.155', '127.0.0.1', 'localhost', 'foodgrampy.hopto.org']
 
