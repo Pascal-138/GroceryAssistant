@@ -69,8 +69,6 @@ class RecipeViewSet(ModelViewSet):
                                                context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            # favorite = Favorite.objects.filter(user=request.user,
-            #                                    recipe=recipe_obj).first()
             favorite = request.user.favorites.all()
             if favorite:
                 favorite.delete()
