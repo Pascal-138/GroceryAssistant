@@ -2,7 +2,8 @@ from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 from djoser.serializers import UserSerializer, UserCreateSerializer
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from users.models import Follow, User
 
 MIN_AMOUNT = 1
@@ -11,6 +12,8 @@ MAX_AMOUNT = 32000
 
 class CustomUserSerializer(UserSerializer):
     """Сериализатор для модели User."""
+
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -22,6 +25,12 @@ class CustomUserSerializer(UserSerializer):
             'last_name',
             'is_subscribed',
         ]
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(author=obj, user=request.user).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -78,15 +87,20 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         ]
 
-    @staticmethod
-    def get_is_favorited(recipe):
+    def get_is_favorited(self, obj):
         """проверка на добавление рецепта в избранное"""
-        return recipe.is_favorited.exists()
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        return Favorite.objects.filter(
+            recipe=obj, user=request.user).exists()
 
-    @staticmethod
-    def get_is_in_shopping_cart(recipe):
-        """проверка на добавление рецепта в список покупок"""
-        return recipe.is_in_shopping_cart.exists()
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        return ShoppingCart.objects.filter(
+            recipe=obj, user=request.user).exists()
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
